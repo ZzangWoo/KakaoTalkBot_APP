@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">KakaoTalkNotification</string>
+
+    <string name="API_Server_URL">http://doonge.synology.me:2697/</string>
+</resources>

@@ -13,6 +13,7 @@ import com.example.kakaotalknotification.Entity.SubscribeFunctionEntity
 import com.example.kakaotalknotification.R
 import com.example.kakaotalknotification.Repository.RequestRepo
 import com.example.kakaotalknotification.Service.KakaoTalkNotificationListenerService
+import com.example.kakaotalknotification.Util.AlarmUtil
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -28,101 +29,115 @@ class AlarmReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        var param = mutableMapOf<String, String>(
-            "From" to ""
-        )
+        val alarmAction = intent.action
 
-        val builder = Retrofit.Builder()
-            .baseUrl("http://doonge.synology.me:2697")
-            .addConverterFactory(GsonConverterFactory.create())
+        if (alarmAction == "android.com.intent.KAKAO_ALARM") {
+            val calendar = intent.getLongExtra("trigger", 0)
 
-        val retrofit: Retrofit = builder.build()
+            AlarmUtil.setNextAlarm(context, calendar)
 
-        val repo = retrofit.create(RequestRepo::class.java)
-        val call = repo.subscribeTest("list", param)
+            var param = mutableMapOf<String, String>(
+                "From" to ""
+            )
 
-        call.enqueue(object: Callback<List<SubscribeEntity>> {
-            override fun onFailure(
-                call: Call<List<SubscribeEntity>>,
-                t: Throwable
-            ) {
-                Log.e("Listener", "API GET 방식 통신 실패 : " + t)
-            }
+            val builder = Retrofit.Builder()
+                .baseUrl("http://doonge.synology.me:2697")
+                .addConverterFactory(GsonConverterFactory.create())
 
-            override fun onResponse(
-                call: Call<List<SubscribeEntity>>,
-                response: Response<List<SubscribeEntity>>
-            ) {
-                val apiResult: List<SubscribeEntity>? = response.body()
+            val retrofit: Retrofit = builder.build()
 
-                for (i in 0..apiResult!!.size - 1) {
-                    val function = apiResult!![i].Function
-                    val userList = apiResult!![i].UserList.split(',')
+            val repo = retrofit.create(RequestRepo::class.java)
+            val call = repo.subscribeTest("list", param)
 
-                    if (userList.size != 0 && KakaoTalkNotificationListenerService.subscribeCommand.size != 0) {
-                        for (j in 0.. userList.size - 1) {
-                            if (KakaoTalkNotificationListenerService.members.containsKey(userList[j])) {
-                                param["From"] = userList[j]
-                                val subscribeCall = repo.requestSubscribeFunction(
-                                    KakaoTalkNotificationListenerService.subscribeCommand[i], param)
+            call.enqueue(object: Callback<List<SubscribeEntity>> {
+                override fun onFailure(
+                    call: Call<List<SubscribeEntity>>,
+                    t: Throwable
+                ) {
+                    Log.e("Listener", "API GET 방식 통신 실패 : " + t)
+                }
 
-                                subscribeCall.enqueue(object: Callback<SubscribeFunctionEntity> {
-                                    override fun onFailure(
-                                        call: Call<SubscribeFunctionEntity>,
-                                        t: Throwable
-                                    ) {
-                                        Log.e("Listener", "API GET 방식 통신 실패 : " + t)
-                                    }
+                override fun onResponse(
+                    call: Call<List<SubscribeEntity>>,
+                    response: Response<List<SubscribeEntity>>
+                ) {
+                    val apiResult: List<SubscribeEntity>? = response.body()
 
-                                    override fun onResponse(
-                                        call: Call<SubscribeFunctionEntity>,
-                                        response: Response<SubscribeFunctionEntity>
-                                    ) {
-                                        val apiResult = response.body()
-                                        val message = apiResult?.Message
+                    for (i in 0..apiResult!!.size - 1) {
+                        val function = apiResult!![i].Function
+                        val userList = apiResult!![i].UserList.split(',')
 
-                                        val actions = KakaoTalkNotificationListenerService.members[userList[j]]!!.notification.actions
+                        if (userList.size != 0 && KakaoTalkNotificationListenerService.subscribeCommand.size != 0) {
+                            for (j in 0.. userList.size - 1) {
+                                if (KakaoTalkNotificationListenerService.members.containsKey(userList[j])) {
+                                    param["From"] = userList[j]
+                                    val subscribeCall = repo.requestSubscribeFunction(
+                                        KakaoTalkNotificationListenerService.subscribeCommand[i], param)
 
-                                        for (act in actions) {
-                                            if (act != null && act.allowGeneratedReplies && act.actionIntent != null) {
-                                                val replyIntent = Intent()
-                                                val replyBundle = Bundle()
+                                    subscribeCall.enqueue(object: Callback<SubscribeFunctionEntity> {
+                                        override fun onFailure(
+                                            call: Call<SubscribeFunctionEntity>,
+                                            t: Throwable
+                                        ) {
+                                            Log.e("Listener", "API GET 방식 통신 실패 : " + t)
+                                        }
 
-                                                try {
-                                                    if (act.remoteInputs != null) {
-                                                        var remoteInputs = act.remoteInputs
+                                        override fun onResponse(
+                                            call: Call<SubscribeFunctionEntity>,
+                                            response: Response<SubscribeFunctionEntity>
+                                        ) {
+                                            val apiResult = response.body()
+                                            val message = apiResult?.Message
 
-                                                        for (inputs in remoteInputs) {
-                                                            replyBundle.putCharSequence(
-                                                                inputs.resultKey,
-                                                                message
+                                            val actions = KakaoTalkNotificationListenerService.members[userList[j]]!!.notification.actions
+
+                                            for (act in actions) {
+                                                if (act != null && act.allowGeneratedReplies && act.actionIntent != null) {
+                                                    val replyIntent = Intent()
+                                                    val replyBundle = Bundle()
+
+                                                    try {
+                                                        if (act.remoteInputs != null) {
+                                                            var remoteInputs = act.remoteInputs
+
+                                                            for (inputs in remoteInputs) {
+                                                                replyBundle.putCharSequence(
+                                                                    inputs.resultKey,
+                                                                    message
+                                                                )
+                                                            }
+                                                            RemoteInput.addResultsToIntent(
+                                                                remoteInputs,
+                                                                replyIntent,
+                                                                replyBundle
+                                                            )
+
+                                                            act.actionIntent.send(
+                                                                context,
+                                                                0,
+                                                                replyIntent
                                                             )
                                                         }
-                                                        RemoteInput.addResultsToIntent(
-                                                            remoteInputs,
-                                                            replyIntent,
-                                                            replyBundle
-                                                        )
-
-                                                        act.actionIntent.send(
-                                                            context,
-                                                            0,
-                                                            replyIntent
-                                                        )
+                                                    } catch (e: Exception) {
+                                                        Log.e("Listener", "오류발생 오류발생!!\n" + e)
                                                     }
-                                                } catch (e: Exception) {
-                                                    Log.e("Listener", "오류발생 오류발생!!\n" + e)
                                                 }
                                             }
                                         }
-                                    }
 
-                                });
+                                    });
+                                }
                             }
                         }
                     }
                 }
-            }
-        })
+            })
+
+
+        }
+
+
+
+
     }
 }

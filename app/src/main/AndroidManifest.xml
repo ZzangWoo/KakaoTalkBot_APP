@@ -21,7 +21,8 @@
         <receiver
             android:name=".Receiver.AlarmReceiver"
             android:enabled="true"
-            android:exported="true"></receiver>
+            android:exported="true">
+        </receiver>
 
         <activity android:name=".MainActivity">
             <intent-filter>

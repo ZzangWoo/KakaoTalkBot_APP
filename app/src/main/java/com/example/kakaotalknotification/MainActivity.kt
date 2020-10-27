@@ -14,6 +14,7 @@ import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import com.example.kakaotalknotification.Receiver.AlarmReceiver
+import com.example.kakaotalknotification.Util.AlarmUtil
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -26,14 +27,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // 알람 등록
-        val alarmManager = getSystemService((Context.ALARM_SERVICE)) as AlarmManager
-
-        val intent = Intent(this, AlarmReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
-            this, AlarmReceiver.NOTIFICATION_ID, intent, PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
         val packageName = packageName
         if (!pm.isIgnoringBatteryOptimizations(packageName)) {
@@ -43,18 +36,16 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(powerManagerIntent, 0)
         }
 
-//        val alarmTime = (SystemClock.elapsedRealtime() + 60 * 1000)
-
         var calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 6)
-        calendar.set(Calendar.MINUTE, 40)
+        calendar.set(Calendar.HOUR_OF_DAY, 21)
+        calendar.set(Calendar.MINUTE, 30)
         calendar.set(Calendar.SECOND, 0)
 
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            calendar.timeInMillis,
-            pendingIntent
-        )
+        // 알람 등록
+        val alarmIntent = Intent(this, AlarmReceiver::class.java)
+        alarmIntent.action = "android.com.intent.KAKAO_ALARM"
+        alarmIntent.putExtra("trigger", calendar.timeInMillis)
+        AlarmUtil.setAlarm(this, intent, calendar.timeInMillis)
 
         Log.e("Listener", "알람설정 완료")
     }

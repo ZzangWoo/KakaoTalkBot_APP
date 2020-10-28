@@ -37,17 +37,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         var calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 21)
-        calendar.set(Calendar.MINUTE, 30)
+        calendar.set(Calendar.HOUR_OF_DAY, 20)
+        calendar.set(Calendar.MINUTE, 38)
         calendar.set(Calendar.SECOND, 0)
 
         // 알람 등록
         val alarmIntent = Intent(this, AlarmReceiver::class.java)
         alarmIntent.action = "android.com.intent.KAKAO_ALARM"
         alarmIntent.putExtra("trigger", calendar.timeInMillis)
-        AlarmUtil.setAlarm(this, intent, calendar.timeInMillis)
-
-        Log.e("Listener", "알람설정 완료")
+        AlarmUtil.setAlarm(this, alarmIntent, calendar.timeInMillis)
     }
 
     private fun isNotificationPermissionAllowed(): Boolean {

@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import com.example.kakaotalknotification.Receiver.AlarmReceiver
 
 class AlarmUtil {
@@ -17,6 +18,7 @@ class AlarmUtil {
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar, pendingIntent)
+                Log.e("Listener", "알람설정 완료")
             }
             else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar, pendingIntent)

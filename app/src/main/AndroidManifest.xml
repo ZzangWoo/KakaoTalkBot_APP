@@ -22,6 +22,9 @@
             android:name=".Receiver.AlarmReceiver"
             android:enabled="true"
             android:exported="true">
+            <intent-filter>
+                <action android:name="android.com.intent.KAKAO_ALARM"/>
+            </intent-filter>
         </receiver>
 
         <activity android:name=".MainActivity">

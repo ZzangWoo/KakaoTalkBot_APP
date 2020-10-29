@@ -73,9 +73,15 @@ class MainActivity : AppCompatActivity() {
             // 알람설정 버튼 클릭
             setAlarmButton.setOnClickListener{
                 var calendar = Calendar.getInstance()
+
+                if (calendar.get(Calendar.HOUR_OF_DAY) >= hourNumberPicker.value && calendar.get(Calendar.MINUTE) >= minuteNumberPicker.value) {
+                    calendar.add(Calendar.DATE, 1)
+                }
+
                 calendar.set(Calendar.HOUR_OF_DAY, hourNumberPicker.value)
                 calendar.set(Calendar.MINUTE, minuteNumberPicker.value)
                 calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
 
                 // 알람 등록
                 val alarmIntent = Intent(this, AlarmReceiver::class.java)

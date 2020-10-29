@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity() {
             setAlarmButton.setOnClickListener{
                 var calendar = Calendar.getInstance()
 
-                if (calendar.get(Calendar.HOUR_OF_DAY) >= hourNumberPicker.value && calendar.get(Calendar.MINUTE) >= minuteNumberPicker.value) {
+                if (calendar.get(Calendar.HOUR_OF_DAY) > hourNumberPicker.value) {
                     calendar.add(Calendar.DATE, 1)
                 }
 

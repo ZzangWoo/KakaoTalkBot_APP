@@ -565,7 +565,7 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
                                 param["param3"] = "notadmin"
                             }
                         }
-                        else {
+                        else if (param["param1"] == "") {
                             // 단톡방인 경우
                             if (kakaoRoom != null) {
                                 param["param3"] = "room"

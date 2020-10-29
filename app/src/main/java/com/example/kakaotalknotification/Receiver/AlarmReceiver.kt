@@ -30,14 +30,11 @@ class AlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val alarmAction = intent.action
-        Log.e("Listener", "알람 띠링띠링22\n" + alarmAction)
 
         if (alarmAction == "android.com.intent.KAKAO_ALARM") {
-            Log.e("Listener", "알람 띠링띠링22")
-
             val calendar = intent.getLongExtra("trigger", 0)
 
-            //AlarmUtil.setNextAlarm(context, calendar)
+            AlarmUtil.setNextAlarm(context, calendar)
 
             var param = mutableMapOf<String, String>(
                 "From" to ""

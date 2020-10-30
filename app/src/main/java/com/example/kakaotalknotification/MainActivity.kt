@@ -40,11 +40,13 @@ class MainActivity : AppCompatActivity() {
             super.onCreate(savedInstanceState)
             setContentView(R.layout.activity_main)
 
+            // Notification Listener 실행시키기 위해 권한
             if (!isNotificationPermissionAllowed()) {
                 var intent: Intent = Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
                 startActivity(intent)
             }
 
+            // 배터리 최적화 풀기 (잠자기 모드 해제)
             val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
             val packageName = packageName
             if (!pm.isIgnoringBatteryOptimizations(packageName)) {
@@ -54,6 +56,7 @@ class MainActivity : AppCompatActivity() {
                 startActivityForResult(powerManagerIntent, 0)
             }
 
+            // 알람 설정을 위한 컨트롤 초기화
             val setAlarmButton: Button = findViewById(R.id.SetAlarmButton)
             val cancelAlarmButton: Button = findViewById(R.id.CancelAlarmButton)
 
@@ -65,7 +68,7 @@ class MainActivity : AppCompatActivity() {
             minuteNumberPicker.minValue = 0
             minuteNumberPicker.maxValue = 60
 
-
+            // ListView와 Adapter 설정
             logAdapter = LogListAdapter(this, logItems)
             val logListView: ListView = findViewById(R.id.LogListView)
             logListView.adapter = logAdapter

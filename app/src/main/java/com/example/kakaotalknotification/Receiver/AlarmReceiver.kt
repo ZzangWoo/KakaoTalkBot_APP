@@ -34,6 +34,7 @@ class AlarmReceiver : BroadcastReceiver() {
         if (alarmAction == "android.com.intent.KAKAO_ALARM") {
             val calendar = intent.getLongExtra("trigger", 0)
 
+            // 알람이 울리게 되면 다음 시간에 다시 알람 설정
             AlarmUtil.setNextAlarm(context, calendar)
 
             var param = mutableMapOf<String, String>(

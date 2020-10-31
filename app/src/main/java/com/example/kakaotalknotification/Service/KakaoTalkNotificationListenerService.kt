@@ -586,6 +586,8 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
                     else if (param["command"] == "구독취소") {
                         if (from == "둥이" || from == "조창우") {
                             param["param3"] = "admin"
+
+                            members.remove(param["param1"])
                         }
                         else {
                             // members에 취소할 아이디 있으면

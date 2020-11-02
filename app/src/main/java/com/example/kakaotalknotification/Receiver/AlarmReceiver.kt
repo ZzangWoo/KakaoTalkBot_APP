@@ -7,9 +7,11 @@ import android.content.Intent
 import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
+import com.example.kakaotalknotification.Adapter.LogList
 import com.example.kakaotalknotification.Entity.ResponseEntity
 import com.example.kakaotalknotification.Entity.SubscribeEntity
 import com.example.kakaotalknotification.Entity.SubscribeFunctionEntity
+import com.example.kakaotalknotification.MainActivity
 import com.example.kakaotalknotification.R
 import com.example.kakaotalknotification.Repository.RequestRepo
 import com.example.kakaotalknotification.Service.KakaoTalkNotificationListenerService
@@ -20,6 +22,9 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.Exception
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 class AlarmReceiver : BroadcastReceiver() {
 
@@ -33,6 +38,14 @@ class AlarmReceiver : BroadcastReceiver() {
 
         if (alarmAction == "android.com.intent.KAKAO_ALARM") {
             val calendar = intent.getLongExtra("trigger", 0)
+            val nowCalendar = Calendar.getInstance().timeInMillis
+
+            val current = LocalDateTime.now()
+            val formatter = DateTimeFormatter.ofPattern("MM월 dd일 HH시 mm분 ss초")
+            val date = current.format(formatter)
+            var logList = LogList("테스트", "알람시간 : " + calendar + "\n알람울린시간" + nowCalendar, date)
+            MainActivity.logItems.add(logList)
+            MainActivity.logAdapter.notifyDataSetChanged()
 
             // 알람이 울리게 되면 다음 시간에 다시 알람 설정
             AlarmUtil.setNextAlarm(context, calendar)

@@ -11,6 +11,7 @@ import com.example.kakaotalknotification.MainActivity
 import com.example.kakaotalknotification.Receiver.AlarmReceiver
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 import kotlin.time.hours
 
 class AlarmUtil {
@@ -30,7 +31,7 @@ class AlarmUtil {
                 val current = LocalDateTime.now()
                 val formatter = DateTimeFormatter.ofPattern("MM월 dd일 HH시 mm분 ss초")
                 val date = current.format(formatter)
-                val logList = LogList("알람설정", if(log == null) "예약됐을걸?" else log, date)
+                var logList = LogList("알람설정", if(log == null) "예약됐을걸?" else log, date)
 
                 // 로그 갱신
                 MainActivity.logItems.add(logList)
@@ -46,13 +47,16 @@ class AlarmUtil {
 
         fun setNextAlarm(context: Context, trigger: Long) {
             // 알람시간 24시간 후로 설정
-            val calendar = trigger + 1000 * 60 * 60 * 24
+            // (테스트를 위해 6시간에 한번씩 울리도록 수정)
+            val calendar = trigger + 1000 * 60 * 60 * 6
 
             // 24시간 후에 알람 설정
+            // (테스트를 위해 6시간에 한번씩 울리도록 수정)
             val intent = Intent(context, AlarmReceiver::class.java)
             intent.action = "android.com.intent.KAKAO_ALARM"
             intent.putExtra("trigger", calendar)
-            intent.putExtra("log", "24시간 후에 다시 알람")
+//            intent.putExtra("log", "24시간 후에 다시 알람")
+            intent.putExtra("log", "6시간 후에 다시 알람")
             setAlarm(context, intent, calendar)
         }
 

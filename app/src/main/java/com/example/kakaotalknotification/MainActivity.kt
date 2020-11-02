@@ -77,14 +77,15 @@ class MainActivity : AppCompatActivity() {
             setAlarmButton.setOnClickListener{
                 var calendar = Calendar.getInstance()
 
-                if (calendar.get(Calendar.HOUR_OF_DAY) > hourNumberPicker.value) {
-                    calendar.add(Calendar.DATE, 1)
-                }
-
                 calendar.set(Calendar.HOUR_OF_DAY, hourNumberPicker.value)
                 calendar.set(Calendar.MINUTE, minuteNumberPicker.value)
                 calendar.set(Calendar.SECOND, 0)
                 calendar.set(Calendar.MILLISECOND, 0)
+
+                val nowCalendar = Calendar.getInstance()
+                if (calendar.before(nowCalendar) || nowCalendar.time == calendar.time) {
+                    calendar.add(Calendar.DATE, 1)
+                }
 
                 // 알람 등록
                 val alarmIntent = Intent(this, AlarmReceiver::class.java)

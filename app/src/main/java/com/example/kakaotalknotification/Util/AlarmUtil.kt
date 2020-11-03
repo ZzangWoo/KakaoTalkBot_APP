@@ -48,7 +48,8 @@ class AlarmUtil {
         fun setNextAlarm(context: Context, trigger: Long) {
             // 알람시간 24시간 후로 설정
             // (테스트를 위해 6시간에 한번씩 울리도록 수정)
-            val calendar = trigger + 1000 * 60 * 60 * 6
+            // 4분정도 차이가 나기때문에 다음 시간은 4분 빼기
+            val calendar = trigger + 1000 * 60 * 60 * 6 - 1000 * 60 * 4
 
             // 24시간 후에 알람 설정
             // (테스트를 위해 6시간에 한번씩 울리도록 수정)

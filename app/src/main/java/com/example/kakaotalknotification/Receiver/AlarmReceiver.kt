@@ -48,7 +48,7 @@ class AlarmReceiver : BroadcastReceiver() {
             MainActivity.logAdapter.notifyDataSetChanged()
 
             // 알람이 울리게 되면 다음 시간에 다시 알람 설정
-            AlarmUtil.setNextAlarm(context, calendar)
+            AlarmUtil.setNextAlarm(context, nowCalendar)
 
             var param = mutableMapOf<String, String>(
                 "From" to ""

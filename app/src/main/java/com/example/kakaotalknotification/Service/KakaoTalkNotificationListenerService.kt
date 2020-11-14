@@ -521,6 +521,9 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
                         Log.e("Listener", "오류발생 오류발생!!\n" + ex)
                     }
                 }
+                else if (text!!.startsWith("/게임")) {
+                    var splitCommand = text.split(' ')
+                }
                 else if (text!!.startsWith(('/'))) {
                     var splitCommand = text.split(' ')
 

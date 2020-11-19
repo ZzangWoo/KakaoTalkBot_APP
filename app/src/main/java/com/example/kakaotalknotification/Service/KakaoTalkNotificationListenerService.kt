@@ -39,6 +39,18 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
         var subscribeCommand: MutableList<String> = mutableListOf()
     }
 
+    /************************* 게임 카운트를 위한 변수 ****************************/
+    private var gameTime1 = 0
+    private var isGameRunning1 = false
+    private var gameTimerTask1: Timer?=null
+    private var gamePlayNoti1: MutableMap<String, StatusBarNotification> = mutableMapOf()
+
+    private var gameTime2 = 0
+    private var isGameRunning2 = false
+    private var gameTimerTask2: Timer?=null
+    private var gamePlayNoti2: MutableMap<String, StatusBarNotification> = mutableMapOf()
+    /****************************************************************************/
+
     override fun onListenerConnected() {
         super.onListenerConnected()
         Log.e("Listen", "KakaoTalkNotificationListener is Connected")
@@ -804,6 +816,12 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
                     Log.e("Listener", "오류발생 오류발생!!\n" + e)
                 }
             }
+        }
+    }
+
+    private fun gameStart() {
+        if (!isGameRunning1) {
+
         }
     }
 }

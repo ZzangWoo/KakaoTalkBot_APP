@@ -22,6 +22,7 @@ import java.lang.Exception
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.concurrent.timer
 
 class KakaoTalkNotificationListenerService: NotificationListenerService() {
 
@@ -84,8 +85,8 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
 
                 // POST 방식 테스트
                 if (text!!.startsWith("둥봇")) {
-                    val messageEntity = MessageEntity(actions, from, text, "Test")
-                    sendMessage(messageEntity)
+//                    val messageEntity = MessageEntity(actions, from, text, "Test")
+//                    sendMessage(messageEntity)
                 }
                 // GET 방식 테스트
                 else if (text!!.startsWith("@게시글")) {
@@ -533,8 +534,33 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
                         Log.e("Listener", "오류발생 오류발생!!\n" + ex)
                     }
                 }
-                else if (text!!.startsWith("/게임")) {
-                    var splitCommand = text.split(' ')
+                else if (text!!.startsWith("/숫자야구")) {
+                    // 게임이 실행중인지 확인
+                    if (isGameRunning1) {
+                        if (gamePlayNoti1.keys.contains(kakaoRoom) || gamePlayNoti1.keys.contains(from)) {
+                            var gameMessage = "[경고경고]\n"
+                            gameMessage += "현재 게임이 진행되고 있어요.\n"
+                            gameMessage += "******** 게임상황 ********\n"
+                            sendMessage(sbn, gameMessage)
+                        } else if (!gamePlayNoti1.keys.contains(kakaoRoom) && !gamePlayNoti1.keys.contains(from)
+                            && gamePlayNoti1.size > 0) {
+                            var gameMessage = "[경고경고]\n"
+                            gameMessage += "다른 방에서 게임이 진행되고 있어요\n"
+                            gameMessage += "잠시 후에 다시 시도해주세용\n"
+                            sendMessage(sbn, gameMessage)
+                        }
+                    } else {
+                        isGameRunning1 = true
+
+                        gamePlayNoti1.put(
+                            if (kakaoRoom == null) from else kakaoRoom.toString(),
+                            sbn
+                        )
+                        var gameMessage = "[둥봇 안내메세지]\n"
+                        gameMessage += "게임시작!!!"
+                        sendMessage(gamePlayNoti1.values.first(), gameMessage)
+                        gameStart()
+                    }
                 }
                 else if (text!!.startsWith(('/'))) {
                     var splitCommand = text.split(' ')
@@ -750,78 +776,55 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
         }
     }
 
-    fun sendMessage(messageEntity: MessageEntity) {
-        for (act in messageEntity.actions) {
-            if (act != null && act.allowGeneratedReplies && act.actionIntent != null) {
-                val pendingIntent = act.actionIntent
-                val replyIntent = Intent()
-                val replyBundle = Bundle()
+    fun sendMessage(sbn: StatusBarNotification, msg: String) {
+        val mNotification = sbn.notification
+        val extras: Bundle = mNotification.extras
 
-                try {
-                    if (act.remoteInputs != null) {
-                        val remoteInputs = act.remoteInputs
+        if (sbn != null && sbn.packageName.equals("com.kakao.talk")) {
+            val actions = sbn.notification.actions
 
+            for (act in actions) {
+                if (act != null && act.allowGeneratedReplies && act.actionIntent != null) {
+                    val replyIntent = Intent()
+                    val replyBundle = Bundle()
 
-                        // Chat API 호출
-                        val builder = Retrofit.Builder()
-                            .baseUrl("http://doonge.synology.me:2697")
-                            .addConverterFactory(GsonConverterFactory.create())
+                    try {
+                        if (act.remoteInputs != null) {
+                            val remoteInputs = act.remoteInputs
 
-                        val retrofit: Retrofit = builder.build()
+                            for (inputs in remoteInputs) {
+                                replyBundle.putCharSequence(inputs.resultKey, msg)
+                            }
+                            RemoteInput.addResultsToIntent(remoteInputs, replyIntent, replyBundle)
 
-                        if (messageEntity.type == "Test") {
-
+                            act.actionIntent.send(applicationContext, 0, replyIntent)
                         }
-
-                        val repo: TestRepo = retrofit.create(TestRepo::class.java)
-
-                        val param = mapOf(
-                            "message" to messageEntity.text
-                        )
-
-                        val call: Call<TestEntity> = repo.postTest(param)
-                        call.enqueue(object: Callback<TestEntity> {
-                            override fun onFailure(
-                                call: Call<TestEntity>,
-                                t: Throwable
-                            ) {
-                                Log.e("Listener", "POST 방식 실패 : " + t)
-                            }
-
-                            override fun onResponse(
-                                call: Call<TestEntity>,
-                                response: Response<TestEntity>
-                            ) {
-                                Log.e("Listener", "[POST] API Server 통신 성공")
-
-                                val apiResult: TestEntity? = response.body()
-
-                                Log.e("Listener", "받은 메세지 : " + apiResult?.Test)
-
-//                                var botMessage: String = "[${messageEntity.from} 말따라하기]\n" + apiResult?.Test
-
-                                var botMessage: String = "[둥봇 안내사항]\n" + apiResult?.Test
-
-                                for (inputs in remoteInputs) {
-                                    replyBundle.putCharSequence(inputs.resultKey, botMessage)
-                                }
-                                RemoteInput.addResultsToIntent(remoteInputs, replyIntent, replyBundle)
-
-                                act.actionIntent.send(applicationContext, 0, replyIntent)
-                            }
-
-                        })
+                    } catch (e: Exception) {
+                        Log.e("Listener", "오류발생 오류발생!!\n" + e)
                     }
-                } catch (e: Exception) {
-                    Log.e("Listener", "오류발생 오류발생!!\n" + e)
                 }
             }
         }
     }
 
     private fun gameStart() {
-        if (!isGameRunning1) {
+        gameTimerTask1 = timer(period=1000) {
+            gameTime1++;
+            if (gameTime1 == 15) {
+                var gameMessage = "[둥봇의 안내메세지]\n"
+                gameMessage += "게임 시작 15초가 지났습니다. 남은 15초 안에 정답을 외쳐주세요."
+                sendMessage(gamePlayNoti1.values.first(), gameMessage)
+            } else if (gameTime1 == 30) {
+                var gameMessage = "[둥봇의 안내메세지]\n"
+                gameMessage += "시간초과로 게임이 종료되었어요\n"
+                gameMessage += "정답은 [XXX] 였어요"
+                sendMessage(gamePlayNoti1.values.first(), gameMessage)
 
+                gameTime1 = 0
+                isGameRunning1 = false
+                gamePlayNoti1.clear()
+                cancel()
+            }
         }
     }
 }

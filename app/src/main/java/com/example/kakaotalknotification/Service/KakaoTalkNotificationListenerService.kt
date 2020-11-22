@@ -9,6 +9,7 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
 import com.example.kakaotalknotification.Entity.*
+import com.example.kakaotalknotification.Game.NumberBaseballGame
 import com.example.kakaotalknotification.R
 import com.example.kakaotalknotification.Repository.RequestRepo
 import com.example.kakaotalknotification.Repository.TestRepo
@@ -39,6 +40,10 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
         // 구독기능 매칭 ( <"영어", "한글"> )
         var subscribeCommand: MutableList<String> = mutableListOf()
     }
+
+    /************************* 게임 객체 **************************/
+    private var numberBaseballGame = NumberBaseballGame()
+    /*************************************************************/
 
     /************************* 게임 카운트를 위한 변수 ****************************/
     private var gameTime1 = 0
@@ -559,7 +564,12 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
                         var gameMessage = "[둥봇 안내메세지]\n"
                         gameMessage += "게임시작!!!"
                         sendMessage(gamePlayNoti1.values.first(), gameMessage)
+
+                        // 시간초세기 시작
                         gameStart()
+
+                        // 맞출 숫자 만들기
+                        numberBaseballGame.makeNumber()
                     }
                 }
                 else if (text!!.startsWith(('/'))) {
@@ -810,14 +820,14 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
     private fun gameStart() {
         gameTimerTask1 = timer(period=1000) {
             gameTime1++;
-            if (gameTime1 == 15) {
+            if (gameTime1 == 5) {
                 var gameMessage = "[둥봇의 안내메세지]\n"
                 gameMessage += "게임 시작 15초가 지났습니다. 남은 15초 안에 정답을 외쳐주세요."
                 sendMessage(gamePlayNoti1.values.first(), gameMessage)
-            } else if (gameTime1 == 30) {
+            } else if (gameTime1 == 10) {
                 var gameMessage = "[둥봇의 안내메세지]\n"
                 gameMessage += "시간초과로 게임이 종료되었어요\n"
-                gameMessage += "정답은 [XXX] 였어요"
+                gameMessage += "정답은 [" + numberBaseballGame.botAnswer + "] 였어요"
                 sendMessage(gamePlayNoti1.values.first(), gameMessage)
 
                 gameTime1 = 0

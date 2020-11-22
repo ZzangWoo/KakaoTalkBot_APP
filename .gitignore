@@ -12,4 +12,4 @@
 /captures
 .externalNativeBuild
 .cxx
-/app/src
+/app/src/main/res/values

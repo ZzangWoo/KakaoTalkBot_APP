@@ -4,7 +4,7 @@ import java.util.*
 
 class NumberBaseballGame : Game() {
 
-    fun makeNumber() : String {
+    fun makeNumber() {
 
         val random = Random()
 
@@ -28,7 +28,7 @@ class NumberBaseballGame : Game() {
             resultNumber += i.toString()
         }
 
-        return resultNumber
+        botAnswer = resultNumber
 
     }
 

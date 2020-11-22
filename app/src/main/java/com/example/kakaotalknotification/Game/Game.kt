@@ -4,12 +4,15 @@ import android.service.notification.StatusBarNotification
 
 abstract class Game {
 
-    var kakaoRoom: String = "";
-    var nickName: String = "";
+    var kakaoRoom: String = ""
+    var nickName: String = ""
 
-    lateinit var noti: StatusBarNotification;
+    lateinit var noti: StatusBarNotification
 
-    var clientAnswer: String = "";
-    var botAnswer: String = "";
+    var clientAnswer: String = ""
+    var botAnswer: String = ""
+
+    var gameMessage: String = ""
+    var winnerMessage: String = ""
 
 }

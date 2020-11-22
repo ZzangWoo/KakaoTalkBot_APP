@@ -543,13 +543,13 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
                     // 게임이 실행중인지 확인
                     if (isGameRunning1) {
                         if (gamePlayNoti1.keys.contains(kakaoRoom) || gamePlayNoti1.keys.contains(from)) {
-                            var gameMessage = "[경고경고]\n"
+                            var gameMessage = "[둥봇 안내메세지]\n"
                             gameMessage += "현재 게임이 진행되고 있어요.\n"
-                            gameMessage += "******** 게임상황 ********\n"
+                            gameMessage += numberBaseballGame.gameMessage
                             sendMessage(sbn, gameMessage)
                         } else if (!gamePlayNoti1.keys.contains(kakaoRoom) && !gamePlayNoti1.keys.contains(from)
                             && gamePlayNoti1.size > 0) {
-                            var gameMessage = "[경고경고]\n"
+                            var gameMessage = "[둥봇 안내메세지]\n"
                             gameMessage += "다른 방에서 게임이 진행되고 있어요\n"
                             gameMessage += "잠시 후에 다시 시도해주세용\n"
                             sendMessage(sbn, gameMessage)
@@ -718,6 +718,44 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
                     }
                 }
 
+                // 명령어 표시 '/' 없는 대화
+                else {
+                    // 정답이라 외치고 gamePlayNoti에 방 정보가 일치할 때
+                    if (text!!.startsWith("정답") && (gamePlayNoti1.keys.contains(kakaoRoom) || gamePlayNoti1.keys.contains(from))) {
+                        var splitCommand = text.split(' ')
+
+                        if (splitCommand.size >= 2) {
+                            if (numberBaseballGame.examineNumber(splitCommand[1])) {
+                                var resultMessage = ""
+                                if (numberBaseballGame.checkNumber(from, splitCommand[1])) {
+                                    resultMessage += numberBaseballGame.winnerMessage
+                                    sendMessage(gamePlayNoti1.values.first(), resultMessage)
+
+                                    gameTimerTask1?.cancel()
+                                    gameTime1 = 0
+                                    isGameRunning1 = false
+                                    gamePlayNoti1.clear()
+                                    numberBaseballGame.gameClear()
+                                } else {
+                                    resultMessage += "오답입니다!!\n\n"
+                                    resultMessage += numberBaseballGame.gameMessage
+                                    sendMessage(gamePlayNoti1.values.first(), resultMessage)
+                                    gameTime1 = 0
+                                }
+                            } else {
+                                var warningMessage = "[둥봇 안내메세지]\n"
+                                warningMessage += "유효하지 않은 숫자입니다!!"
+                                sendMessage(gamePlayNoti1.values.first(), warningMessage)
+                                gameTime1 = 0
+                            }
+                        } else {
+                            var warningMessage = "[둥봇 안내메세지]\n"
+                            warningMessage += "정답을 입력하셔야죠!!"
+                            sendMessage(gamePlayNoti1.values.first(), warningMessage)
+                            gameTime1 = 0
+                        }
+                    }
+                }
                 /*
                 **** 봉인 *****
                 else if (text!!.startsWith("@날씨")) {
@@ -820,11 +858,11 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
     private fun gameStart() {
         gameTimerTask1 = timer(period=1000) {
             gameTime1++;
-            if (gameTime1 == 5) {
+            if (gameTime1 == 15) {
                 var gameMessage = "[둥봇의 안내메세지]\n"
                 gameMessage += "게임 시작 15초가 지났습니다. 남은 15초 안에 정답을 외쳐주세요."
                 sendMessage(gamePlayNoti1.values.first(), gameMessage)
-            } else if (gameTime1 == 10) {
+            } else if (gameTime1 == 30) {
                 var gameMessage = "[둥봇의 안내메세지]\n"
                 gameMessage += "시간초과로 게임이 종료되었어요\n"
                 gameMessage += "정답은 [" + numberBaseballGame.botAnswer + "] 였어요"
@@ -834,7 +872,9 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
                 isGameRunning1 = false
                 gamePlayNoti1.clear()
                 cancel()
+                numberBaseballGame.gameClear()
             }
         }
     }
+
 }

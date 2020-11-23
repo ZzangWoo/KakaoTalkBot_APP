@@ -93,6 +93,7 @@ class NumberBaseballGame : Game() {
         return result
     }
 
+    // 게임 끝난 후 초기화 메서드
     fun gameClear() {
         this.kakaoRoom = ""
         this.nickName = ""
@@ -102,6 +103,7 @@ class NumberBaseballGame : Game() {
         this.winnerMessage = ""
     }
 
+    // 숫자인지 판별 메서드
     fun isInt(number: String) : Boolean{
         try {
             Integer.parseInt(number)

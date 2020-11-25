@@ -11,6 +11,7 @@ import android.util.Log
 import com.example.kakaotalknotification.Entity.*
 import com.example.kakaotalknotification.Game.NumberBaseballGame
 import com.example.kakaotalknotification.R
+import com.example.kakaotalknotification.Repository.GameRepo
 import com.example.kakaotalknotification.Repository.RequestRepo
 import com.example.kakaotalknotification.Repository.TestRepo
 import com.example.kakaotalknotification.Repository.WeatherRepo
@@ -269,7 +270,7 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
                 }
                 else if (text!!.startsWith("/구독리스트갱신")) {
                     val builder = Retrofit.Builder()
-                        .baseUrl("http://doonge.synology.me:2697")
+                        .baseUrl(getString(R.string.API_Server_URL))
                         .addConverterFactory(GsonConverterFactory.create())
 
                     val retrofit: Retrofit = builder.build()
@@ -724,7 +725,7 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
                     if (text!!.startsWith("정답") && (gamePlayNoti1.keys.contains(kakaoRoom) || gamePlayNoti1.keys.contains(from))) {
                         var splitCommand = text.split(' ')
 
-                        if (splitCommand.size >= 2) {
+                        if (splitCommand.size == 2) {
                             if (numberBaseballGame.examineNumber(splitCommand[1])) {
                                 var resultMessage = ""
                                 if (numberBaseballGame.checkNumber(from, splitCommand[1])) {
@@ -734,6 +735,37 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
                                     gameTimerTask1?.cancel()
                                     gameTime1 = 0
                                     isGameRunning1 = false
+
+                                    // 랭킹 출력
+                                    var gameData = mutableMapOf<String, String>(
+                                        "NickName" to from,
+                                        "RoomName" to kakaoRoom.toString()
+                                    )
+
+                                    val builder = Retrofit.Builder()
+                                        .baseUrl(getString(R.string.API_Server_URL))
+                                        .addConverterFactory(GsonConverterFactory.create())
+                                    val retrofit = builder.build()
+                                    val repo = retrofit.create(GameRepo::class.java)
+                                    val call = repo.setPoint(gameData)
+
+                                    call.enqueue(object: Callback<NumberBaseballGameEntity> {
+                                        override fun onFailure(
+                                            call: Call<NumberBaseballGameEntity>,
+                                            t: Throwable
+                                        ) {
+                                            Log.e("Listener", "숫자야구 랭킹 불러오기 실패 : " + t)
+                                        }
+
+                                        override fun onResponse(
+                                            call: Call<NumberBaseballGameEntity>,
+                                            response: Response<NumberBaseballGameEntity>
+                                        ) {
+
+                                        }
+
+                                    })
+
                                     gamePlayNoti1.clear()
                                     numberBaseballGame.gameClear()
                                 } else {

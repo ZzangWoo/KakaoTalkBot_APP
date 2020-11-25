@@ -739,7 +739,7 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
                                     // 랭킹 출력
                                     var gameData = mutableMapOf<String, String>(
                                         "NickName" to from,
-                                        "RoomName" to kakaoRoom.toString()
+                                        "RoomName" to if(kakaoRoom == null) "null" else kakaoRoom.toString()
                                     )
 
                                     val builder = Retrofit.Builder()
@@ -749,25 +749,28 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
                                     val repo = retrofit.create(GameRepo::class.java)
                                     val call = repo.setPoint(gameData)
 
-                                    call.enqueue(object: Callback<NumberBaseballGameEntity> {
+                                    call.enqueue(object: Callback<ResponseEntity> {
                                         override fun onFailure(
-                                            call: Call<NumberBaseballGameEntity>,
+                                            call: Call<ResponseEntity>,
                                             t: Throwable
                                         ) {
                                             Log.e("Listener", "숫자야구 랭킹 불러오기 실패 : " + t)
                                         }
 
                                         override fun onResponse(
-                                            call: Call<NumberBaseballGameEntity>,
-                                            response: Response<NumberBaseballGameEntity>
+                                            call: Call<ResponseEntity>,
+                                            response: Response<ResponseEntity>
                                         ) {
+                                            val apiResult = response.body()
+                                            val message = apiResult?.Message
 
+                                            sendMessage(gamePlayNoti1.values.first(), message)
+
+                                            gamePlayNoti1.clear()
+                                            numberBaseballGame.gameClear()
                                         }
 
                                     })
-
-                                    gamePlayNoti1.clear()
-                                    numberBaseballGame.gameClear()
                                 } else {
                                     resultMessage += "오답입니다!!\n\n"
                                     resultMessage += numberBaseballGame.gameMessage
@@ -856,7 +859,7 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
         }
     }
 
-    fun sendMessage(sbn: StatusBarNotification, msg: String) {
+    fun sendMessage(sbn: StatusBarNotification, msg: String?) {
         val mNotification = sbn.notification
         val extras: Bundle = mNotification.extras
 

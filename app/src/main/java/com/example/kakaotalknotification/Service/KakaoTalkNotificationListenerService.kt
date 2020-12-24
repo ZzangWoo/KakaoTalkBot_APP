@@ -8,6 +8,7 @@ import android.os.Parcel
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import com.example.kakaotalknotification.Arduino.ControlArduino
 import com.example.kakaotalknotification.Entity.*
 import com.example.kakaotalknotification.Game.NumberBaseballGame
 import com.example.kakaotalknotification.R
@@ -571,6 +572,17 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
 
                         // 맞출 숫자 만들기
                         numberBaseballGame.makeNumber()
+                    }
+                }
+                // 아두이노 연동 + 형광등 켜고 끄기
+                else if (text!!.startsWith("/불")) {
+                    var splitCommand = text.split(' ')
+                    var command = splitCommand[1]
+
+                    if (command == "켜") {
+                        ControlArduino.on()
+                    } else if (command == "꺼") {
+                        ControlArduino.off()
                     }
                 }
                 else if (text!!.startsWith(('/'))) {

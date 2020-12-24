@@ -21,6 +21,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.get
 import com.example.kakaotalknotification.Adapter.LogList
 import com.example.kakaotalknotification.Adapter.LogListAdapter
+import com.example.kakaotalknotification.Arduino.ControlArduino
 import com.example.kakaotalknotification.Receiver.AlarmReceiver
 import com.example.kakaotalknotification.Util.AlarmUtil
 import java.lang.Exception
@@ -101,6 +102,10 @@ class MainActivity : AppCompatActivity() {
                 alarmIntent.action = "android.com.intent.KAKAO_ALARM"
                 AlarmUtil.cancelAlarm(this, alarmIntent)
             }
+
+            // 블루투스 연결
+            ControlArduino.connect()
+
         } catch (e: Exception) {
             Log.e("Listener", e.toString())
         }

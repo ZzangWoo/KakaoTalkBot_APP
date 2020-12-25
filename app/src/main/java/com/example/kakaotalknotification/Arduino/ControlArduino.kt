@@ -23,12 +23,14 @@ class ControlArduino {
 
         lateinit var deviceAddress: String
 
-        fun connect() { pairedDeviceList() }
-        fun on() { sendCommand("N") }
-        fun off() { sendCommand("F") }
-        fun refresh() { refreshBluetooth() }
+        var connectStatus: String = "Fail"
 
-        private fun refreshBluetooth() {
+        fun connect(): String { return pairedDeviceList() }
+        fun on(): String { return sendCommand("N") }
+        fun off(): String { return sendCommand("F") }
+        fun refresh(): String { return refreshBluetooth() }
+
+        private fun refreshBluetooth(): String {
             if (bluetoothSocket != null) {
                 try {
                     bluetoothSocket!!.close()
@@ -37,24 +39,29 @@ class ControlArduino {
                     pairedDeviceList()
                 } catch (e: IOException) {
                     e.printStackTrace()
+                    return "Fail"
                 }
             }
+            return "Success"
         }
 
-        private fun sendCommand(input: String) {
+        private fun sendCommand(input: String): String {
             if (bluetoothSocket != null) {
                 try {
                     bluetoothSocket!!.outputStream.write((input.toByteArray()))
                 } catch (e: IOException) {
                     e.printStackTrace()
+                    return "Fail"
                 }
             }
+            return "Success"
         }
 
-        private fun pairedDeviceList() {
+        private fun pairedDeviceList(): String {
             bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
             pairedDevices = bluetoothAdapter.bondedDevices
             val list : ArrayList<BluetoothDevice> = ArrayList()
+            var result = "Success"
 
             if (!pairedDevices.isEmpty()) {
                 for (device: BluetoothDevice in pairedDevices) {
@@ -68,6 +75,8 @@ class ControlArduino {
             }
 
             ConnectToDevice().execute()
+
+            return connectStatus
         }
     }
 
@@ -85,6 +94,7 @@ class ControlArduino {
                     bluetoothSocket = device.createInsecureRfcommSocketToServiceRecord(deviceUUID)
                     bluetoothSocket!!.connect()
                 }
+
             } catch (e: IOException) {
                 connectSuccess = false
                 e.printStackTrace()
@@ -97,8 +107,10 @@ class ControlArduino {
 
             if (!connectSuccess) {
                 Log.i("data", "couldn't connect")
+                connectStatus = "Fail"
             } else {
                 Log.i("data", "connected")
+                connectStatus = "Success"
             }
         }
     }

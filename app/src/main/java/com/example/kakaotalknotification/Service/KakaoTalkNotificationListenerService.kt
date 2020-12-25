@@ -576,13 +576,26 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
                 }
                 // 아두이노 연동 + 형광등 켜고 끄기
                 else if (text!!.startsWith("/불")) {
+                    if (from != "조창우") {
+                        return
+                    }
+
                     var splitCommand = text.split(' ')
                     var command = splitCommand[1]
+                    var result = ""
 
                     if (command == "켜") {
-                        ControlArduino.on()
+                        result = ControlArduino.on()
                     } else if (command == "꺼") {
-                        ControlArduino.off()
+                        result = ControlArduino.off()
+                    } else if (command == "새로고침") {
+                        result = ControlArduino.refresh()
+                    }
+
+                    if (result == "Success") {
+                        sendMessage(sbn, "[둥봇 메세지]\n명령 수행 성공")
+                    } else if (result == "Fail") {
+                        sendMessage(sbn, "[둥봇 메세지]\n명령 수행 실패")
                     }
                 }
                 else if (text!!.startsWith(('/'))) {
@@ -688,7 +701,7 @@ class KakaoTalkNotificationListenerService: NotificationListenerService() {
                             try {
                                 if (act.remoteInputs != null) {
                                     val remoteInputs = act.remoteInputs
-2
+
                                     // GET 방식 API 호출
                                     val builder = Retrofit.Builder()
                                         .baseUrl(getString(R.string.API_Server_URL))
